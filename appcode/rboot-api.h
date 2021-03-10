@@ -93,7 +93,7 @@ bool ICACHE_FLASH_ATTR rboot_write_end(rboot_write_status *status);
  *  of OTA data is received over the network.
  *  @note   Call rboot_write_init before calling this function to get the rboot_write_status structure
 */
-bool ICACHE_FLASH_ATTR rboot_write_flash(rboot_write_status *status, uint8_t *data, uint16_t len);
+bool ICACHE_FLASH_ATTR rboot_write_flash(rboot_write_status *status, const uint8_t *data, uint16_t len);
 
 #ifdef BOOT_RTC_ENABLED
 /** @brief  Get rBoot status/control data from RTC data area

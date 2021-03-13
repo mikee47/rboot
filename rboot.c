@@ -19,6 +19,8 @@
 #define echof(fmt, ...)
 #endif
 
+#include "partition.h"
+
 static uint32_t check_image(uint32_t readpos) {
 
 	uint8_t buffer[BUFFER_SIZE];
@@ -258,44 +260,6 @@ static uint8_t calc_chksum(uint8_t *start, uint8_t *end) {
 }
 #endif
 
-#ifndef BOOT_CUSTOM_DEFAULT_CONFIG
-// populate the user fields of the default config
-// created on first boot or in case of corruption
-static uint8_t default_config(rboot_config *romconf, uint32_t flashsize) {
-	romconf->count = 2;
-#ifdef BOOT_ROM0_ADDR
-    romconf->roms[0] = BOOT_ROM0_ADDR;
-#else
-	romconf->roms[0] = SECTOR_SIZE * (BOOT_CONFIG_SECTOR + 1);
-#endif
-
-#ifdef BOOT_ROM1_ADDR
-	romconf->roms[1] = BOOT_ROM1_ADDR;
-#else
-	romconf->roms[1] = (flashsize / 2) + (SECTOR_SIZE * (BOOT_CONFIG_SECTOR + 1));
-#endif
-
-#if defined(BOOT_BIG_FLASH) && defined(BOOT_GPIO_ENABLED)
-	if(flashsize > 0x200000) {
-		romconf->count += 1;
-#ifdef BOOT_ROM2_ADDR
-	romconf->roms[2] = BOOT_ROM2_ADDR;
-#else
-	romconf->roms[2] = 0x310000;
-#endif
-	romconf->gpio_rom = 2;
-}
-#endif
-
-#ifdef BOOT_GPIO_ENABLED
-	romconf->mode = MODE_GPIO_ROM;
-#endif
-#ifdef BOOT_GPIO_SKIP_ENABLED
-	romconf->mode = MODE_GPIO_SKIP;
-#endif
-}
-#endif
-
 // prevent this function being placed inline with main
 // to keep main's stack size as small as possible
 // don't mark as static or it'll be optimised out when
@@ -319,7 +283,6 @@ uint32_t NOINLINE find_image(void) {
 	uint8_t temp_boot = 0;
 #endif
 
-	rboot_config *romconf = (rboot_config*)buffer;
 	rom_header *header = (rom_header*)buffer;
 
 #ifdef BOOT_BAUDRATE
@@ -431,6 +394,7 @@ uint32_t NOINLINE find_image(void) {
 
 	// read boot config
 	SPIRead(BOOT_CONFIG_SECTOR * SECTOR_SIZE, buffer, SECTOR_SIZE);
+	rboot_config *romconf = (rboot_config*)buffer;
 	// fresh install or old version?
 	if (romconf->magic != BOOT_CONFIG_MAGIC || romconf->version != BOOT_CONFIG_VERSION
 #ifdef BOOT_CONFIG_CHKSUM
@@ -438,14 +402,29 @@ uint32_t NOINLINE find_image(void) {
 #endif
 		) {
 		// create a default config for a standard 2 rom setup
-		echof("Writing default boot config.\r\n");
+		echof("Resetting boot config.\r\n");
 		ets_memset(romconf, 0x00, sizeof(rboot_config));
 		romconf->magic = BOOT_CONFIG_MAGIC;
 		romconf->version = BOOT_CONFIG_VERSION;
-		default_config(romconf, flashsize);
+#if defined(BOOT_BIG_FLASH) && defined(BOOT_GPIO_ENABLED)
+		if(flashsize > 0x200000) {
+			romconf->gpio_rom = 2;
+		}
+#endif
+#ifdef BOOT_GPIO_ENABLED
+		romconf->mode = MODE_GPIO_ROM;
+#endif
+#ifdef BOOT_GPIO_SKIP_ENABLED
+		romconf->mode = MODE_GPIO_SKIP;
+#endif
 #ifdef BOOT_CONFIG_CHKSUM
 		romconf->chksum = calc_chksum((uint8_t*)romconf, (uint8_t*)&romconf->chksum);
 #endif
+		updateConfig = true;
+		// Remaining fields will be read from partition table
+	}
+
+	if(scan_partitions(romconf)) {
 		updateConfig = true;
 	}
 

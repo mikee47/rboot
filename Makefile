@@ -28,6 +28,8 @@ LD_SCRIPT = eagle.app.v6.ld
 
 E2_OPTS = -quiet -bin -boot0
 
+CFLAGS += -DPARTITION_TABLE_OFFSET=$(PARTITION_TABLE_OFFSET)
+
 ifeq ($(RBOOT_BIG_FLASH),1)
 	CFLAGS += -DBOOT_BIG_FLASH
 endif
@@ -135,7 +137,7 @@ $(RBOOT_BUILD_BASE)/rboot-hex2a.h: $(RBOOT_BUILD_BASE)/rboot-stage2a.elf
 	@echo "E2 $@"
 	$(Q) $(ESPTOOL2) -quiet -header $< $@ .text
 
-$(RBOOT_BUILD_BASE)/rboot.o: rboot.c rboot-private.h rboot.h $(RBOOT_BUILD_BASE)/rboot-hex2a.h
+$(RBOOT_BUILD_BASE)/rboot.o: rboot.c rboot-private.h rboot.h partition.h $(RBOOT_BUILD_BASE)/rboot-hex2a.h
 	@echo "CC $<"
 	$(Q) $(CC) $(CFLAGS) -I$(RBOOT_BUILD_BASE) -c $< -o $@
 

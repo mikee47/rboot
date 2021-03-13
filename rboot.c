@@ -306,10 +306,10 @@ uint32_t NOINLINE find_image(void) {
 	uint32_t loadAddr;
 	uint32_t flashsize;
 	int32_t romToBoot;
-	uint8_t updateConfig = 0;
+	bool updateConfig = false;
 	uint8_t buffer[SECTOR_SIZE];
 #ifdef BOOT_GPIO_ENABLED
-	uint8_t gpio_boot = 0;
+	bool gpio_boot = false;
 #endif
 #if defined (BOOT_GPIO_ENABLED) || defined(BOOT_GPIO_SKIP_ENABLED)
 	uint8_t sec;
@@ -446,9 +446,7 @@ uint32_t NOINLINE find_image(void) {
 #ifdef BOOT_CONFIG_CHKSUM
 		romconf->chksum = calc_chksum((uint8_t*)romconf, (uint8_t*)&romconf->chksum);
 #endif
-		// write new config sector
-		SPIEraseSector(BOOT_CONFIG_SECTOR);
-		SPIWrite(BOOT_CONFIG_SECTOR * SECTOR_SIZE, buffer, SECTOR_SIZE);
+		updateConfig = true;
 	}
 
 	// try rom selected in the config, unless overriden by gpio/temp boot
@@ -480,7 +478,7 @@ uint32_t NOINLINE find_image(void) {
 		}
 		echof("Booting GPIO-selected rom.\r\n");
 		romToBoot = romconf->gpio_rom;
-		gpio_boot = 1;
+		gpio_boot = true;
 #elif defined(BOOT_GPIO_SKIP_ENABLED)
 		romToBoot = romconf->current_rom + 1;
 		if (romToBoot >= romconf->count) {
@@ -488,7 +486,7 @@ uint32_t NOINLINE find_image(void) {
 		}
 		romconf->current_rom = romToBoot;
 #endif
-		updateConfig = 1;
+		updateConfig = true;
 		if (romconf->mode & MODE_GPIO_ERASES_SDKCONFIG) {
 			echof("Erasing SDK config sectors before booting.\r\n");
 			for (sec = 1; sec < 5; sec++) {
@@ -505,7 +503,7 @@ uint32_t NOINLINE find_image(void) {
 		echof("Invalid rom selected, defaulting to 0.\r\n");
 		romToBoot = 0;
 		romconf->current_rom = 0;
-		updateConfig = 1;
+		updateConfig = true;
 	}
 
 	// check rom is valid
@@ -535,7 +533,7 @@ uint32_t NOINLINE find_image(void) {
 		echof("Rom %d at %x is bad.\r\n", romToBoot, romconf->roms[romToBoot]);
 		// for normal mode try each previous rom
 		// until we find a good one or run out
-		updateConfig = 1;
+		updateConfig = true;
 		romToBoot--;
 		if (romToBoot < 0) romToBoot = romconf->count - 1;
 		if (romToBoot == romconf->current_rom) {
@@ -552,6 +550,7 @@ uint32_t NOINLINE find_image(void) {
 #ifdef BOOT_CONFIG_CHKSUM
 		romconf->chksum = calc_chksum((uint8_t*)romconf, (uint8_t*)&romconf->chksum);
 #endif
+		echof("Updating boot config.\r\n");
 		SPIEraseSector(BOOT_CONFIG_SECTOR);
 		SPIWrite(BOOT_CONFIG_SECTOR * SECTOR_SIZE, buffer, SECTOR_SIZE);
 	}

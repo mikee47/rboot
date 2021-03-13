@@ -275,9 +275,6 @@ uint32_t NOINLINE find_image(void) {
 #ifdef BOOT_GPIO_ENABLED
 	bool gpio_boot = false;
 #endif
-#if defined (BOOT_GPIO_ENABLED) || defined(BOOT_GPIO_SKIP_ENABLED)
-	uint8_t sec;
-#endif
 #ifdef BOOT_RTC_ENABLED
 	rboot_rtc_data rtc;
 	uint8_t temp_boot = 0;
@@ -467,10 +464,7 @@ uint32_t NOINLINE find_image(void) {
 #endif
 		updateConfig = true;
 		if (romconf->mode & MODE_GPIO_ERASES_SDKCONFIG) {
-			echof("Erasing SDK config sectors before booting.\r\n");
-			for (sec = 1; sec < 5; sec++) {
-				SPIEraseSector((flashsize / SECTOR_SIZE) - sec);
-			}
+			erase_sdk_config();
 		}
 	}
 #endif

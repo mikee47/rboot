@@ -6,6 +6,8 @@
 #define PARTITION_TYPE_APP 0x00
 #define PARTITION_APP_SUBTYPE_FACTORY 0x00 // Corresponds to Slot #0
 #define PARTITION_APP_SUBTYPE_OTA0 0x10	// Also corresponds to Slot #0
+#define PARTITION_TYPE_DATA 0x01
+#define PARTITION_DATA_SUBTYPE_SYSPARAM 0x40 // SDK system parameters
 #define ESP_PARTITION_TABLE_MAX_LEN 0x0C00
 
 /**
@@ -61,3 +63,35 @@ static bool scan_partitions(rboot_config* romconf)
 	}
 	return config_changed;
 }
+
+#if defined(BOOT_GPIO_ENABLED) || defined(BOOT_GPIO_SKIP_ENABLED)
+
+// Supports MODE_GPIO_ERASES_SDKCONFIG setting
+static void erase_sdk_config()
+{
+	echof("Erasing SDK config partition.\r\n");
+
+	bool config_changed = false;
+	uint8_t rom_count = 0;
+	struct esp_partition_info_t info;
+	uint32_t offset;
+	for(offset = 0; offset < ESP_PARTITION_TABLE_MAX_LEN; offset += sizeof(info)) {
+		info.magic = 0;
+		if(SPIRead(PARTITION_TABLE_OFFSET + offset, &info, sizeof(info)) != 0) {
+			break;
+		}
+		if(info.magic != ESP_PARTITION_MAGIC) {
+			break;
+		}
+		if(info.type != PARTITION_TYPE_DATA || info.subtype != PARTITION_DATA_SUBTYPE_SYSPARAM) {
+			continue;
+		}
+		uint32_t sector = info.offset / SECTOR_SIZE;
+		uint8_t sector_count = info.size / SECTOR_SIZE;
+		while(sector_count-- != 0) {
+			SPIEraseSector(sector++);
+		}
+	}
+}
+
+#endif

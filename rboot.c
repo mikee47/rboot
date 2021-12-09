@@ -425,7 +425,7 @@ uint32_t NOINLINE find_image(void) {
 		updateConfig = true;
 	}
 
-	// try rom selected in the config, unless overriden by gpio/temp boot
+	// try rom selected in the config, unless overridden by gpio/temp boot
 	romToBoot = romconf->current_rom;
 
 #ifdef BOOT_RTC_ENABLED

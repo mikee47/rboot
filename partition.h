@@ -19,7 +19,7 @@ struct esp_partition_info_t {
 	uint8_t subtype; ///< Sub-type for partition (interpretation dependent upon type)
 	uint32_t offset; ///< Start offset
 	uint32_t size;   ///< Size of partition in bytes
-	char name[16];   ///< Unique identifer for entry
+	char name[16];   ///< Unique identifier for entry
 	uint32_t flags;  ///< Various option flags
 };
 

@@ -89,7 +89,7 @@ rboot_write_status ICACHE_FLASH_ATTR rboot_write_init(uint32_t start_addr) {
 	return status;
 }
 
-// ensure any remaning bytes get written (needed for files not a multiple of 4 bytes)
+// ensure any remaining bytes get written (needed for files not a multiple of 4 bytes)
 bool ICACHE_FLASH_ATTR rboot_write_end(rboot_write_status *status) {
 	uint8_t i;
 	if (status->extra_count != 0) {

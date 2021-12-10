@@ -126,7 +126,7 @@ of 4096.
 -  ``roms`` is the array of flash address for the roms. The default
    generated config will contain two entries: ``0x00002000`` and
    ``0x00082000``.
--  ``chksum`` (if enabled, not by deafult) should be the xor of ``0xef``
+-  ``chksum`` (if enabled, not by default) should be the xor of ``0xef``
    followed by each of the bytes of the config structure up to (but
    obviously not including) the chksum byte itself.
 
@@ -157,7 +157,7 @@ currently selected normal or temp rom (as appropriate). However if the
 GPIO is pulled low then the rom indicated in config option ``gpio_rom``
 is started instead.
 
-The default GPIO is 16, but this can be overriden in the Makefile
+The default GPIO is 16, but this can be overridden in the Makefile
 (``RBOOT_GPIO_NUMBER``) or ``rboot.h`` (``BOOT_GPIO_NUM``). If GPIOs
 other than 16 are used, the internal pullup resistor is enabled before
 the pin is read and disabled immediately afterwards. For pins that

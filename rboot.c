@@ -294,7 +294,7 @@ uint32_t NOINLINE find_image(void) {
 	ets_delay_us(BOOT_DELAY_MICROS);
 #endif
 
-	echof("\r\nrBoot v1.4.2 - richardaburton@gmail.com\r\n");
+	echof("\r\nSming rBoot v1.5\r\n");
 
 	// read rom header
 	SPIRead(0, header, sizeof(rom_header));

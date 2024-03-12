@@ -5,6 +5,8 @@ rBoot - An open source boot loader for the ESP8266
 by Richard A Burton, richardaburton@gmail.com
 http://richard.burtons.org/
 
+March 2021: Forked for use with Sming and partition tables.
+
 rBoot is designed to be a flexible open source boot loader, a
 replacement for the binary blob supplied with the SDK. It has the
 following advantages over the Espressif loader:

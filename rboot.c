@@ -268,7 +268,6 @@ uint32_t NOINLINE find_image(void) {
 
 	uint8_t flag;
 	uint32_t loadAddr;
-	uint32_t flashsize;
 	int32_t romToBoot;
 	bool updateConfig = false;
 	uint8_t buffer[SECTOR_SIZE];
@@ -304,45 +303,20 @@ uint32_t NOINLINE find_image(void) {
 	flag = header->flags2 >> 4;
 	if (flag == 0) {
 		echof("4 Mbit\r\n");
-		flashsize = 0x80000;
 	} else if (flag == 1) {
 		echof("2 Mbit\r\n");
-		flashsize = 0x40000;
 	} else if (flag == 2) {
 		echof("8 Mbit\r\n");
-		flashsize = 0x100000;
 	} else if (flag == 3 || flag == 5) {
 		echof("16 Mbit\r\n");
-#ifdef BOOT_BIG_FLASH
-		flashsize = 0x200000;
-#else
-		flashsize = 0x100000; // limit to 8Mbit
-#endif
 	} else if (flag == 4 || flag == 6) {
 		echof("32 Mbit\r\n");
-#ifdef BOOT_BIG_FLASH
-		flashsize = 0x400000;
-#else
-		flashsize = 0x100000; // limit to 8Mbit
-#endif
 	} else if (flag == 8) {
 		echof("64 Mbit\r\n");
-#ifdef BOOT_BIG_FLASH
-		flashsize = 0x800000;
-#else
-		flashsize = 0x100000; // limit to 8Mbit
-#endif
 	} else if (flag == 9) {
 		echof("128 Mbit\r\n");
-#ifdef BOOT_BIG_FLASH
-		flashsize = 0x1000000;
-#else
-		flashsize = 0x100000; // limit to 8Mbit
-#endif
 	} else {
 		echof("unknown\r\n");
-		// assume at least 4mbit
-		flashsize = 0x80000;
 	}
 
 	// print spi mode
@@ -403,12 +377,8 @@ uint32_t NOINLINE find_image(void) {
 		ets_memset(romconf, 0x00, sizeof(rboot_config));
 		romconf->magic = BOOT_CONFIG_MAGIC;
 		romconf->version = BOOT_CONFIG_VERSION;
-#if defined(BOOT_BIG_FLASH) && defined(BOOT_GPIO_ENABLED)
-		if(flashsize > 0x200000) {
-			romconf->gpio_rom = 2;
-		}
-#endif
 #ifdef BOOT_GPIO_ENABLED
+		romconf->gpio_rom = 2;
 		romconf->mode = MODE_GPIO_ROM;
 #endif
 #ifdef BOOT_GPIO_SKIP_ENABLED

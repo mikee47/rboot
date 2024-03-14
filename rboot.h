@@ -14,10 +14,6 @@ extern "C" {
 
 #include <stdint.h>
 
-#ifdef RBOOT_INTEGRATION
-#include <rboot-integration.h>
-#endif
-
 // uncomment to use only c code
 // if you aren't using gcc you may need to do this
 //#define BOOT_NO_ASM

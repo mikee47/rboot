@@ -11,6 +11,7 @@
 #include <c_types.h>
 #include <esp_spi_flash.h>
 
+#include <stdlib.h>
 #include "rboot-api.h"
 
 #ifdef __cplusplus
@@ -43,7 +44,7 @@ rboot_config ICACHE_FLASH_ATTR rboot_get_config(void) {
 // updates checksum automatically (if enabled)
 bool ICACHE_FLASH_ATTR rboot_set_config(rboot_config *conf) {
 	uint8_t *buffer;
-	buffer = (uint8_t*)os_malloc(SECTOR_SIZE);
+	buffer = (uint8_t*)malloc(SECTOR_SIZE);
 	if (!buffer) {
 		//os_printf("No ram!\r\n");
 		return false;
@@ -58,7 +59,7 @@ bool ICACHE_FLASH_ATTR rboot_set_config(rboot_config *conf) {
 	flashmem_erase_sector(BOOT_CONFIG_SECTOR);
 	flashmem_write(buffer, BOOT_CONFIG_SECTOR * SECTOR_SIZE, SECTOR_SIZE);
 	
-	os_free(buffer);
+	free(buffer);
 	return true;
 }
 
@@ -114,7 +115,7 @@ bool ICACHE_FLASH_ATTR rboot_write_flash(rboot_write_status *status, const uint8
 	}
 	
 	// get a buffer
-	buffer = (uint8_t *)os_malloc(len + status->extra_count);
+	buffer = (uint8_t *)malloc(len + status->extra_count);
 	if (!buffer) {
 		//os_printf("No ram!\r\n");
 		return false;
@@ -152,7 +153,7 @@ bool ICACHE_FLASH_ATTR rboot_write_flash(rboot_write_status *status, const uint8
 		}
 	//}
 
-	os_free(buffer);
+	free(buffer);
 	return ret;
 }
 

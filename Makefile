@@ -6,7 +6,6 @@
 ESPTOOL2 ?= ../esptool2/esptool2
 
 RBOOT_BUILD_BASE ?= build
-RBOOT_FW_BASE    ?= firmware
 
 ifndef XTENSA_BINDIR
 CC := xtensa-lx106-elf-gcc
@@ -57,22 +56,10 @@ endif
 ifeq ($(RBOOT_IROM_CHKSUM),1)
 	CFLAGS += -DBOOT_IROM_CHKSUM
 endif
-ifneq ($(RBOOT_ROM0_ADDR),)
-	CFLAGS += -DBOOT_ROM0_ADDR=$(RBOOT_ROM0_ADDR)
-endif
-ifneq ($(RBOOT_ROM1_ADDR),)
-	CFLAGS += -DBOOT_ROM1_ADDR=$(RBOOT_ROM1_ADDR)
-endif
-ifneq ($(RBOOT_ROM2_ADDR),)
-	CFLAGS += -DBOOT_ROM2_ADDR=$(RBOOT_ROM2_ADDR)
-endif
 ifeq ($(RBOOT_SILENT),1)
 	CFLAGS += -DBOOT_SILENT=$(RBOOT_SILENT)
 endif
 
-ifneq ($(RBOOT_EXTRA_INCDIR),)
-	CFLAGS += $(addprefix -I,$(RBOOT_EXTRA_INCDIR))
-endif
 CFLAGS += $(addprefix -I,.)
 
 ifeq ($(SPI_SIZE), 256K)
@@ -113,13 +100,9 @@ endif
 
 .SECONDARY:
 
-#all: $(RBOOT_BUILD_BASE) $(RBOOT_FW_BASE) $(RBOOT_FW_BASE)/rboot.bin $(RBOOT_FW_BASE)/testload1.bin $(RBOOT_FW_BASE)/testload2.bin
-all: $(RBOOT_BUILD_BASE) $(RBOOT_FW_BASE) $(RBOOT_FW_BASE)/rboot.bin
+all: $(RBOOT_BUILD_BASE) $(RBOOT_BUILD_BASE)/rboot.bin
 
 $(RBOOT_BUILD_BASE):
-	mkdir -p $@
-
-$(RBOOT_FW_BASE):
 	mkdir -p $@
 
 $(RBOOT_BUILD_BASE)/rboot-stage2a.o: rboot-stage2a.c rboot-private.h rboot.h
@@ -146,11 +129,6 @@ $(RBOOT_BUILD_BASE)/%.elf: $(RBOOT_BUILD_BASE)/%.o
 	@echo "LD $@"
 	$(Q) $(LD) -T$(LD_SCRIPT) $(LDFLAGS) -Wl,--start-group $^ -Wl,--end-group -o $@
 
-$(RBOOT_FW_BASE)/%.bin: $(RBOOT_BUILD_BASE)/%.elf
+$(RBOOT_BUILD_BASE)/%.bin: $(RBOOT_BUILD_BASE)/%.elf
 	@echo "E2 $@"
 	$(Q) $(ESPTOOL2) $(E2_OPTS) $< $@ .text .rodata
-
-clean:
-	@echo "RM $(RBOOT_BUILD_BASE) $(RBOOT_FW_BASE)"
-	$(Q) rm -rf $(RBOOT_BUILD_BASE)
-	$(Q) rm -rf $(RBOOT_FW_BASE)

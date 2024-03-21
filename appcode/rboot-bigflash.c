@@ -6,17 +6,9 @@
 //////////////////////////////////////////////////
 
 #include <rboot.h>
+#include <esp_attr.h>
 
 #ifdef BOOT_BIG_FLASH
-
-// plain sdk defaults to iram
-#ifndef IRAM_ATTR
-#define IRAM_ATTR
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 extern void Cache_Read_Disable(void);
 extern uint32_t SPIRead(uint32_t, void*, uint32_t);
@@ -70,9 +62,4 @@ void IRAM_ATTR Cache_Read_Enable_New(void) {
 	Cache_Read_Enable(rBoot_mmap_1, rBoot_mmap_2, 1);
 }
 
-#ifdef __cplusplus
-}
 #endif
-
-#endif
-

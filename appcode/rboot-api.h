@@ -13,6 +13,7 @@
 */
 
 #include <rboot.h>
+#include <esp_system.h>
 
 #ifdef __cplusplus
 extern "C" {

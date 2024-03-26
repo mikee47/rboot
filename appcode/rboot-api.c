@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include "rboot-api.h"
+#include <esp_system.h>
 
 #ifdef __cplusplus
 extern "C" {
